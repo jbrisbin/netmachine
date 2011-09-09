@@ -7,30 +7,30 @@ import com.jbrisbin.netmachine.Handler;
  */
 public abstract class StateMachine<C> implements Runnable {
 
-	protected final C context;
+  protected final C context;
 
-	protected StateMachine(C context) {
-		this.context = context;
-	}
+  protected StateMachine(C context) {
+    this.context = context;
+  }
 
-	public final C getContext() {
-		return context;
-	}
+  public final C getContext() {
+    return context;
+  }
 
-	public abstract Handler<C> getStateHandler(String state);
+  public abstract Handler<C> getStateHandler(String state);
 
-	public abstract String getState();
+  public abstract String getState();
 
-	@Override public final void run() {
-		String state = getState();
-		do {
-			Handler<C> handler = getStateHandler(state);
-			if (null == handler) {
-				break;
-			} else {
-				handler.handle(context);
-			}
-		} while (null != (state = getState()));
-	}
+  @Override public final void run() {
+    String state = getState();
+    do {
+      Handler<C> handler = getStateHandler(state);
+      if (null == handler) {
+        break;
+      } else {
+        handler.handle(context);
+      }
+    } while (null != (state = getState()));
+  }
 
 }

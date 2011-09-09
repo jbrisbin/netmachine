@@ -5,6 +5,6 @@ package com.jbrisbin.netmachine;
  */
 public interface WriteHandler<T> {
 
-	void write(T obj, Handler<Void> completionHandler);
+  void write(T obj, Handler<Void> completionHandler);
 
 }

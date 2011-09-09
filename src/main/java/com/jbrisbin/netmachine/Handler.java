@@ -5,6 +5,6 @@ package com.jbrisbin.netmachine;
  */
 public interface Handler<T> {
 
-	void handle(T obj);
+  void handle(T obj);
 
 }

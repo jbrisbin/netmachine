@@ -10,29 +10,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ThreadPool {
 
-	public static final int PROCESSORS = Runtime.getRuntime().availableProcessors();
+  public static final int PROCESSORS = Runtime.getRuntime().availableProcessors();
 
-	public static final ExecutorService ACCEPTOR_POOL = Executors.newCachedThreadPool(
-			new NetmachineThreadFactory("netmachine-core-")
-	);
-	public static final ExecutorService WORKER_POOL = Executors.newFixedThreadPool(
-			PROCESSORS,
-			new NetmachineThreadFactory("netmachine-worker-")
-	);
+  public static final ExecutorService ACCEPTOR_POOL = Executors.newCachedThreadPool(
+      new NetmachineThreadFactory("netmachine-core-")
+  );
+  public static final ExecutorService WORKER_POOL = Executors.newFixedThreadPool(
+      PROCESSORS,
+      new NetmachineThreadFactory("netmachine-worker-")
+  );
 
-	private static class NetmachineThreadFactory implements ThreadFactory {
-		private AtomicInteger threadNum = new AtomicInteger(0);
-		private String prefix = "netmachine-";
+  private static class NetmachineThreadFactory implements ThreadFactory {
+    private AtomicInteger threadNum = new AtomicInteger(0);
+    private String prefix = "netmachine-";
 
-		private NetmachineThreadFactory(String prefix) {
-			this.prefix = prefix;
-		}
+    private NetmachineThreadFactory(String prefix) {
+      this.prefix = prefix;
+    }
 
-		@Override public Thread newThread(Runnable runnable) {
-			Thread t = new Thread(runnable, prefix + threadNum.incrementAndGet());
-			t.setPriority(Thread.NORM_PRIORITY);
-			t.setDaemon(true);
-			return t;
-		}
-	}
+    @Override public Thread newThread(Runnable runnable) {
+      Thread t = new Thread(runnable, prefix + threadNum.incrementAndGet());
+      t.setPriority(Thread.NORM_PRIORITY);
+      t.setDaemon(true);
+      return t;
+    }
+  }
 }

@@ -7,41 +7,41 @@ import java.util.Map;
  */
 public class Route<T> {
 
-	private UriMatcher uriMatcher;
-	private T resource;
+  private UriMatcher uriMatcher;
+  private T resource;
 
-	public Route() {
-	}
+  public Route() {
+  }
 
-	public Route(UriMatcher uriMatcher, T resource) {
-		this.uriMatcher = uriMatcher;
-		this.resource = resource;
-	}
+  public Route(UriMatcher uriMatcher, T resource) {
+    this.uriMatcher = uriMatcher;
+    this.resource = resource;
+  }
 
-	public UriMatcher uriMatcher() {
-		return uriMatcher;
-	}
+  public UriMatcher uriMatcher() {
+    return uriMatcher;
+  }
 
-	public Route uriMatcher(UriMatcher uriMatcher) {
-		this.uriMatcher = uriMatcher;
-		return this;
-	}
+  public Route uriMatcher(UriMatcher uriMatcher) {
+    this.uriMatcher = uriMatcher;
+    return this;
+  }
 
-	public T resource() {
-		return resource;
-	}
+  public T resource() {
+    return resource;
+  }
 
-	public Route resource(T resource) {
-		this.resource = resource;
-		return this;
-	}
+  public Route resource(T resource) {
+    this.resource = resource;
+    return this;
+  }
 
-	public boolean matches(String uri) {
-		return uriMatcher.matches(uri);
-	}
+  public boolean matches(String uri) {
+    return uriMatcher.matches(uri);
+  }
 
-	public Map<String, String> match(String uri) {
-		return uriMatcher.match(uri);
-	}
+  public Map<String, String> match(String uri) {
+    return uriMatcher.match(uri);
+  }
 
 }
