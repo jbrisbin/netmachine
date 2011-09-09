@@ -1,7 +1,5 @@
 package com.jbrisbin.netmachine.http;
 
-import com.jbrisbin.netmachine.HttpMessage;
-
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */
@@ -11,11 +9,13 @@ public class HttpResponse extends HttpMessage<HttpResponse> {
     return new HttpResponse().status(200, "OK");
   }
 
-  public static HttpResponse ok(String content) {
+  public static HttpResponse ok(String contentType, String content) {
     return new HttpResponse()
         .status(200, "OK")
         .contentLength(content.length())
-        .write(content);
+        .contentType(contentType)
+        .write(content)
+        .complete();
   }
 
   public static HttpResponse notFound() {

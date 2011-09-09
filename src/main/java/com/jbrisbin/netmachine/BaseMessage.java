@@ -87,14 +87,22 @@ public abstract class BaseMessage<M extends Message> implements Message<M> {
   @SuppressWarnings({"unchecked"})
   @Override public M completionHandlers(Handler<Void>... completionHandlers) {
     for (Handler<Void> handler : completionHandlers) {
-      this.completionHandlers.add(handler);
+      if (this.completed) {
+        handler.handle(null);
+      } else {
+        this.completionHandlers.add(handler);
+      }
     }
     return (M) this;
   }
 
   @SuppressWarnings({"unchecked"})
   @Override public M completionHandler(Handler<Void> completionHandler) {
-    this.completionHandlers.add(completionHandler);
+    if (this.completed) {
+      completionHandler.handle(null);
+    } else {
+      this.completionHandlers.add(completionHandler);
+    }
     return (M) this;
   }
 
@@ -135,6 +143,9 @@ public abstract class BaseMessage<M extends Message> implements Message<M> {
 
   @SuppressWarnings({"unchecked"})
   @Override public <V> M write(V obj, Handler<Void> completionHandler) {
+    if (this.completed) {
+      throw new IllegalStateException("Cannot write to this response as it's already been completed");
+    }
     if (null != writeHandler) {
       writeHandler.write(obj, completionHandler);
     } else {

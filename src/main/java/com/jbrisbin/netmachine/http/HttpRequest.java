@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.jbrisbin.netmachine.HttpMessage;
-
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */

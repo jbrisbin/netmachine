@@ -16,15 +16,11 @@ public class HttpServerTests {
   public void testHttpServer() throws InterruptedException, IOException {
     Handler<HttpRequest> handler = new Handler<HttpRequest>() {
       @Override public void handle(HttpRequest request) {
-        // Construct a basic reply
+
         String hello = "Hello " + request.paramOr("name", "World") + "!";
-        HttpResponse response = HttpResponse.ok()
-                                            .contentType("text/plain")
-                                            .write(hello);
-        // Set it as this request's reply
+        HttpResponse response = HttpResponse.ok("text/plain", hello);
         request.reply(response);
-        // Write content
-        response.complete();
+
       }
     };
 

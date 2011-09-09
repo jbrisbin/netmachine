@@ -1,8 +1,10 @@
-package com.jbrisbin.netmachine;
+package com.jbrisbin.netmachine.http;
 
 import static com.jbrisbin.netmachine.http.HttpHeaders.*;
 
 import java.net.URI;
+
+import com.jbrisbin.netmachine.BaseMessage;
 
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
