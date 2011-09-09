@@ -1,0 +1,57 @@
+apply plugin: "groovy"
+apply plugin: "idea"
+
+def description = "Lightweight Web framework inspired by Webmachine"
+def group = "com.jbrisbin"
+def version = "0.1.0.SNAPSHOT"
+
+project.sourceCompatibility = 7
+
+configurations {
+	all*.exclude group: "commons-logging"
+	all*.exclude module: "groovy-all", version: "1.8.0-beta-3-SNAPSHOT"
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	mavenRepo(name: "Spring Milestone", urls: "http://maven.springframework.org/milestone")
+	mavenRepo(name: "Codehaus", urls: "http://snapshots.repository.codehaus.org")
+	mavenRepo(name: "JBoss", urls: "https://repository.jboss.org/nexus/content/groups/public-jboss")
+}
+
+dependencies {
+	groovy "org.codehaus.groovy:groovy:$groovyVersion"
+
+	// Logging
+	compile "org.slf4j:slf4j-api:$slf4jVersion"
+	runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+	runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+	runtime("log4j:log4j:1.2.15") {
+		exclude(group: "com.sun.jdmk", module: "jmxtools")
+		exclude(group: "com.sun.jmx", module: "jmxri")
+		exclude(group: "javax.jms", module: "jms")
+		exclude(group: "javax.mail", module: "mail")
+	}
+
+	// Spring
+	compile "org.springframework:spring-core:$springVersion"
+
+	// Netty
+	compile "org.jboss.netty:netty:$nettyVersion"
+
+	// Commons
+	compile "commons-cli:commons-cli:1.2"
+	compile "commons-codec:commons-codec:1.5"
+
+	// Testing
+	testCompile "junit:junit:4.8.2"
+	testCompile "org.spockframework:spock-core:$spockVersion"
+	testCompile "org.hamcrest:hamcrest-all:1.1"
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = "1.0-milestone-4"
+}
+
+idea.module.jdkName = "OpenJDK 1.7"
