@@ -210,6 +210,8 @@ public class HttpServer extends Server<HttpServer> {
                       HttpChunk chunk;
                       if (obj instanceof HttpChunk) {
                         chunk = (HttpChunk) obj;
+                      } else if (obj instanceof Buffer) {
+                        chunk = new DefaultHttpChunk(ChannelBuffers.wrappedBuffer(((Buffer) obj).byteBuffer()));
                       } else {
                         chunk = conversionService.convert(obj, HttpChunk.class);
                       }
