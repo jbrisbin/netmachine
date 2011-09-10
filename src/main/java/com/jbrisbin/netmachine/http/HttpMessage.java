@@ -1,6 +1,6 @@
 package com.jbrisbin.netmachine.http;
 
-import static com.jbrisbin.netmachine.http.HttpHeaders.*;
+import static com.jbrisbin.netmachine.http.HttpHeader.*;
 
 import java.net.URI;
 
@@ -12,7 +12,7 @@ import com.jbrisbin.netmachine.BaseMessage;
 public class HttpMessage<M extends HttpMessage<M>> extends BaseMessage<M> {
 
   protected URI uri;
-  protected int contentLength = -1;
+  protected long contentLength = -1;
 
   public URI uri() {
     return uri;
@@ -24,12 +24,12 @@ public class HttpMessage<M extends HttpMessage<M>> extends BaseMessage<M> {
     return (M) this;
   }
 
-  public int contentLength() {
+  public long contentLength() {
     return contentLength;
   }
 
   @SuppressWarnings({"unchecked"})
-  public M contentLength(int contentLength) {
+  public M contentLength(long contentLength) {
     this.contentLength = contentLength;
     header(CONTENT_LENGTH, "" + contentLength);
     return (M) this;

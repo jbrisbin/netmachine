@@ -3,8 +3,12 @@ package com.jbrisbin.netmachine;
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */
-public interface WriteHandler<T> {
+public abstract class WriteHandler<T> implements Handler<T> {
 
-  void write(T obj, Handler<Void> completionHandler);
+  @Override public void handle(T obj) {
+    write(obj, null);
+  }
+
+  public abstract void write(T obj, Handler<Void> completionHandler);
 
 }

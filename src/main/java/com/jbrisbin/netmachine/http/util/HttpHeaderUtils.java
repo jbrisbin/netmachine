@@ -1,6 +1,6 @@
 package com.jbrisbin.netmachine.http.util;
 
-import static com.jbrisbin.netmachine.http.HttpHeaders.*;
+import static com.jbrisbin.netmachine.http.HttpHeader.*;
 
 import java.text.DateFormat;
 import java.text.ParseException;

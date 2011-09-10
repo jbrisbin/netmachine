@@ -9,7 +9,7 @@ import java.util.TreeMap;
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */
-public abstract class HttpHeaders {
+public abstract class HttpHeader {
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";

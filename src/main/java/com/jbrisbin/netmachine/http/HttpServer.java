@@ -1,17 +1,19 @@
 package com.jbrisbin.netmachine.http;
 
-import static com.jbrisbin.netmachine.http.HttpHeaders.*;
+import static com.jbrisbin.netmachine.http.HttpHeader.*;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.jbrisbin.netmachine.Handler;
 import com.jbrisbin.netmachine.Message;
@@ -28,6 +30,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.DefaultFileRegion;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -168,7 +171,7 @@ public class HttpServer extends Server<HttpServer> {
 
         final boolean keepAlive;
         if (null != request.header(CONNECTION)) {
-          keepAlive = HttpHeaders.matches(request.header(CONNECTION), "Keep-Alive");
+          keepAlive = HttpHeader.matches(request.header(CONNECTION), "Keep-Alive");
         } else {
           keepAlive = false;
         }
@@ -176,7 +179,7 @@ public class HttpServer extends Server<HttpServer> {
         request.replyHandler(new Handler<Message>() {
           @Override public void handle(Message msg) {
             if (msg instanceof HttpResponse) {
-              HttpResponse response = (HttpResponse) msg;
+              final HttpResponse response = (HttpResponse) msg;
 
               if (keepAlive) {
                 response.header(CONNECTION, "Keep-Alive");
@@ -188,27 +191,42 @@ public class HttpServer extends Server<HttpServer> {
               } else {
                 chunked = false;
               }
+
               writeResponse(response, channel);
 
-              response.writeHandler(new WriteHandler<Object>() {
-                @Override public void write(Object obj, final Handler<Void> completionHandler) {
-                  HttpChunk chunk;
-                  if (obj instanceof HttpChunk) {
-                    chunk = (HttpChunk) obj;
-                  } else {
-                    chunk = conversionService.convert(obj, HttpChunk.class);
-                  }
-
-                  ChannelFuture f = channel.write(chunk);
-                  if (null != completionHandler) {
-                    f.addListener(new ChannelFutureListener() {
-                      @Override public void operationComplete(ChannelFuture future) throws Exception {
-                        completionHandler.handle(null);
+              if (chunked || response.contentLength() > 0) {
+                response.writeHandler(new WriteHandler<Object>() {
+                  @Override public void write(Object obj, final Handler<Void> completionHandler) {
+                    if (obj instanceof Path) {
+                      Path path = (Path) obj;
+                      try {
+                        RandomAccessFile f = new RandomAccessFile(path.toFile(), "r");
+                        long len = f.length();
+                        channel.write(new DefaultFileRegion(f.getChannel(), 0, len));
+                      } catch (IOException ioe) {
+                        log.error(ioe.getMessage(), ioe);
                       }
-                    });
+                    } else {
+                      HttpChunk chunk;
+                      if (obj instanceof HttpChunk) {
+                        chunk = (HttpChunk) obj;
+                      } else {
+                        chunk = conversionService.convert(obj, HttpChunk.class);
+                      }
+
+                      ChannelFuture f = channel.write(chunk);
+                      if (null != completionHandler) {
+                        f.addListener(new ChannelFutureListener() {
+                          @Override public void operationComplete(ChannelFuture future) throws Exception {
+                            completionHandler.handle(null);
+                          }
+                        });
+                      }
+                    }
                   }
-                }
-              });
+                });
+              }
+
               response.completionHandler(new Handler<Void>() {
                 @Override public void handle(Void v) {
                   if (!keepAlive) {
@@ -216,6 +234,7 @@ public class HttpServer extends Server<HttpServer> {
                   }
                 }
               });
+
             }
           }
         });
@@ -234,19 +253,23 @@ public class HttpServer extends Server<HttpServer> {
             .header(CONTENT_LENGTH, "0");
         writeResponse(notFound, channel);
 
-      } else if (msg instanceof HttpChunk)
-
-      {
+      } else if (msg instanceof HttpChunk) {
         // Already handled the first bit, we must be processing chunks only now
         HttpChunk chunk = (HttpChunk) e.getMessage();
         ChannelBuffer contentBuffer = chunk.getContent();
         int len = contentBuffer.readableBytes();
         ByteBuffer b = ByteBuffer.allocateDirect(len);
         contentBuffer.readBytes(b);
-        request.readHandler().handle(new Buffer(b));
-      } else
+        b.flip();
+        Handler<Buffer> handler = request.readHandler();
+        if (null != handler) {
+          handler.handle(new Buffer(b));
+        }
 
-      {
+        if (chunk.isLast()) {
+          request.complete();
+        }
+      } else {
         log.warn("Unknown message: " + msg);
       }
     }
@@ -259,55 +282,6 @@ public class HttpServer extends Server<HttpServer> {
           break;
         default:
           log.debug(e.getCause().getMessage(), e.getCause());
-      }
-    }
-  }
-
-  private class WriteCompletionHandler implements WriteHandler<Object>, Handler<Void> {
-
-    ChannelHandlerContext ctx;
-    Channel channel;
-    AtomicReference<ChannelFuture> writeFuture = new AtomicReference<>();
-    boolean chunked = false;
-    boolean keepAlive = false;
-
-    private WriteCompletionHandler(ChannelHandlerContext ctx,
-                                   Channel channel,
-                                   boolean chunked,
-                                   boolean keepAlive) {
-      this.ctx = ctx;
-      this.channel = channel;
-      this.chunked = chunked;
-      this.keepAlive = keepAlive;
-    }
-
-    @Override public void handle(Void v) {
-      if (chunked) {
-
-      }
-      if (!keepAlive) {
-        if (null != writeFuture.get()) {
-          writeFuture.get().addListener(ChannelFutureListener.CLOSE);
-        }
-      }
-    }
-
-    @Override public void write(Object obj, final Handler<Void> completionHandler) {
-      HttpChunk chunk;
-      if (obj instanceof HttpChunk) {
-        chunk = (HttpChunk) obj;
-      } else {
-        chunk = conversionService.convert(obj, HttpChunk.class);
-      }
-
-      ChannelFuture f = channel.write(chunk);
-      writeFuture.set(f);
-      if (null != completionHandler) {
-        f.addListener(new ChannelFutureListener() {
-          @Override public void operationComplete(ChannelFuture future) throws Exception {
-            completionHandler.handle(null);
-          }
-        });
       }
     }
   }

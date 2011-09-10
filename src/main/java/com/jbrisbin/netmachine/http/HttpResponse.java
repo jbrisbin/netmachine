@@ -9,17 +9,26 @@ public class HttpResponse extends HttpMessage<HttpResponse> {
     return new HttpResponse().status(200, "OK");
   }
 
-  public static HttpResponse ok(String contentType, String content) {
+  public static <T> HttpResponse ok(String contentType, T content) {
     return new HttpResponse()
         .status(200, "OK")
-        .contentLength(content.length())
         .contentType(contentType)
         .write(content)
         .complete();
   }
 
+  public static HttpResponse noContent() {
+    return new HttpResponse()
+        .status(204, "No Content")
+        .contentLength(0);
+  }
+
   public static HttpResponse notFound() {
     return new HttpResponse().status(404, "Resource Not Found");
+  }
+
+  public static HttpResponse error() {
+    return new HttpResponse().status(500, "Internal Server Error");
   }
 
   private int statusCode;
