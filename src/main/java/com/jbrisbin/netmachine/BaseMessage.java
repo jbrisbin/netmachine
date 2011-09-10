@@ -79,9 +79,10 @@ public abstract class BaseMessage<M extends Message> implements Message<M> {
   }
 
   @Override public AsynchronousByteChannel io() {
-    BufferByteChannel ch = new BufferByteChannel();
-    availableDataChannels.add(ch);
-    return ch;
+    //This doesn't work right. Just an experiment...
+    //BufferByteChannel ch = new BufferByteChannel();
+    //availableDataChannels.add(ch);
+    return null;
   }
 
   @SuppressWarnings({"unchecked"})
@@ -230,7 +231,7 @@ public abstract class BaseMessage<M extends Message> implements Message<M> {
     private CompletionHandler<Integer, Object> completionHandler;
 
     private void available(Buffer buffer) {
-      available.append(buffer);
+      available = buffer;
       if (null != bufferToFill) {
         available.flip().byteBuffer().put(bufferToFill);
       }

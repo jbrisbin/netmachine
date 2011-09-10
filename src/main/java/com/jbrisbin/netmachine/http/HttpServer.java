@@ -148,15 +148,14 @@ public class HttpServer extends Server<HttpServer> {
       HttpRequest request = (HttpRequest) ctx.getAttachment();
       if (null == request || msg instanceof org.jboss.netty.handler.codec.http.HttpRequest) {
         request = new HttpRequest();
-        org.jboss.netty.handler.codec.http.HttpRequest nettyRequest = (org.jboss.netty.handler.codec.http.HttpRequest) e
-            .getMessage();
+        org.jboss.netty.handler.codec.http.HttpRequest nettyRequest =
+            (org.jboss.netty.handler.codec.http.HttpRequest) e.getMessage();
 
         // Handle Expect: 100-continue
         if (is100ContinueExpected(nettyRequest)) {
           channel.write(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
         }
 
-        // Handle the first bit of the request
         Method method = Method.valueOf(nettyRequest.getMethod().toString());
         request.method(method);
 
@@ -184,6 +183,7 @@ public class HttpServer extends Server<HttpServer> {
               if (keepAlive) {
                 response.header(CONNECTION, "Keep-Alive");
               }
+
               final boolean chunked;
               if (response.contentLength() < 0) {
                 response.header(TRANSFER_ENCODING, "chunked");
